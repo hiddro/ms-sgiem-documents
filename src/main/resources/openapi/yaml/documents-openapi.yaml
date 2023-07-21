@@ -1,0 +1,138 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Document Proyecto SGIEM - UTP
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080/
+tags:
+  - name: document
+    description: Everything about your Documents
+paths:
+  /documents:
+    get:
+      summary: List all documents
+      description: Return list Documents
+      operationId: listDocuments
+      tags:
+        - document
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentResponse'
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /documents/upload:
+    post:
+      summary: Subir archivo
+      description: upload archivo a azure
+      operationId: uploadFile
+      tags:
+        - document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /documents/download/{documentName}:
+    get:
+      summary: Decargar archivo
+      description: download archivo de azure
+      operationId: downloadFile
+      tags:
+        - document
+      parameters:
+        - name: documentName
+          in: path
+          description: url cv
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            'application/octet-stream; charset=UTF-8':
+              schema:
+                type: string
+                format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    FileResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          example: https://.....
+    DocumentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: abcde12345
+        titulo:
+          type: string
+          example: Documento de Integridad
+        tipo:
+          type: string
+          example : .pdf
+        userCode:
+          type: string
+          example: FFFFFFFF
+          description: Codigo del Usuario que creo la Vacante
+        url:
+          type: string
+          example: https://localhost:8080/url-file
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
