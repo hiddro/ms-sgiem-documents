@@ -4,8 +4,10 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.sgiem.ms.documents.api.v1.DocumentApi;
+import com.sgiem.ms.documents.api.v1.FileApi;
 import com.sgiem.ms.documents.dto.FileResponse;
+import com.sgiem.ms.documents.services.DocumentCvService;
+import com.sgiem.ms.documents.utils.commons.Commons;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,18 +33,22 @@ import java.util.UUID;
 @RestController
 @Slf4j
 @CrossOrigin(origins = "*")
-public class DocumentController implements DocumentApi {
+public class DocumentController implements FileApi {
 
     @Value("${blob.connection-string}")
     String connectionString;
 
     @Value("${blob.container-name}")
     String containerName;
+
+    @Autowired
+    public DocumentCvService documentCvService;
+
     @Autowired
     WebClient webClient;
 
     @Override
-    public Mono<ResponseEntity<FileResponse>> uploadFile(Flux<Part> file, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<FileResponse>> uploadFile(Flux<Part> file, String code, ServerWebExchange exchange) {
         return file
                 .ofType(FilePart.class)
                 .flatMap(filePart -> {
@@ -72,9 +78,17 @@ public class DocumentController implements DocumentApi {
                             });
                 })
                 .next()
+                .flatMap(str -> documentCvService.save(Commons.convertToEntity(code, str)))
                 .map(e -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(FileResponse.builder().url(e).build())
+                        .body(FileResponse.builder()
+                                .id(e.getId())
+                                .titulo(e.getTitulo())
+                                .tipoFile(e.getTipoFile())
+                                .code(e.getCode())
+                                .tipoDocumento(e.getTipoDocumento())
+                                .url(e.getUrl())
+                                .build())
                 );
     }
 

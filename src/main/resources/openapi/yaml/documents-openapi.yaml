@@ -7,10 +7,12 @@ info:
 servers:
   - url: http://localhost:8080/
 tags:
+  - name: file
+    description: Everything about your Files
   - name: document
     description: Everything about your Documents
 paths:
-  /documents:
+  /document:
     get:
       summary: List all documents
       description: Return list Documents
@@ -37,13 +39,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /documents/upload:
+  /file/upload:
     post:
       summary: Subir archivo
       description: upload archivo a azure
       operationId: uploadFile
       tags:
-        - document
+        - file
       requestBody:
         required: true
         content:
@@ -54,6 +56,9 @@ paths:
                 file:
                   type: string
                   format: binary
+                code:
+                  type: string
+                  example: FFFFFF
       responses:
         '200':
           description: Successful operation
@@ -70,13 +75,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /documents/download/{documentName}:
+  /file/download/{documentName}:
     get:
       summary: Decargar archivo
       description: download archivo de azure
       operationId: downloadFile
       tags:
-        - document
+        - file
       parameters:
         - name: documentName
           in: path
@@ -103,6 +108,21 @@ components:
     FileResponse:
       type: object
       properties:
+        id:
+          type: string
+          example: abcde12345
+        titulo:
+          type: string
+          example: Documento de Integridad
+        tipoFile:
+          type: string
+          example : .pdf
+        code:
+          type: string
+          example: FFFFFFFF
+        tipoDocumento:
+          type: string
+          example: "cv | documento"
         url:
           type: string
           example: https://.....
